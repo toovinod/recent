@@ -58,23 +58,37 @@ export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
 
   return (
     <>
-      {cards.length === 0 && <p>No stories have been published yet.</p>}
-      <div className="news-list">
+      {cards.length === 0 && (
+        <p className="border-t border-ink/15 py-16 text-[16px] text-[#666772]">
+          No stories to read yet.
+        </p>
+      )}
+      <div className="border-b border-ink/15">
         {cards.map((card) => (
           <NewsCard key={card.id} card={card} />
         ))}
       </div>
       <div ref={sentinelRef} aria-hidden="true" />
-      {isLoading && <p role="status">Loading more news...</p>}
+      {isLoading && (
+        <p role="status" className="py-8 text-sm text-muted">
+          Loading more news...
+        </p>
+      )}
       {error && (
-        <p role="alert">
+        <p role="alert" className="py-8 text-sm text-ink">
           {error}{" "}
-          <button type="button" onClick={() => void loadMore()}>
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            className="ml-2 font-semibold text-[#655bbb] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
+          >
             Retry
           </button>
         </p>
       )}
-      {!nextCursor && cards.length > 0 && <p>You're caught up.</p>}
+      {!nextCursor && cards.length > 0 && (
+        <p className="py-8 text-sm text-muted">You&apos;re caught up.</p>
+      )}
     </>
   );
 }

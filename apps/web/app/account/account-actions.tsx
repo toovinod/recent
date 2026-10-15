@@ -2,6 +2,12 @@
 
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@recent/auth/password-policy";
 import { type FormEvent, useState } from "react";
+import {
+  fieldClass,
+  inputClass,
+  primaryButtonClass,
+  textButtonClass,
+} from "../../components/form-styles";
 import { authClient } from "../../lib/auth-client";
 
 export function AccountActions() {
@@ -52,13 +58,16 @@ export function AccountActions() {
   }
 
   return (
-    <div className="account-actions">
-      <section className="auth-card">
-        <h2>Change password</h2>
-        <form onSubmit={submitPasswordChange}>
-          <label>
+    <div>
+      <section className="rounded-xl border border-ink/10 bg-white p-6 shadow-[0_24px_70px_rgba(32,30,48,0.08)] sm:p-9">
+        <h2 className="text-[29px] leading-tight font-semibold tracking-[-.05em]">
+          Change password
+        </h2>
+        <form onSubmit={submitPasswordChange} className="mt-8 grid gap-5">
+          <label className={fieldClass}>
             Current password
             <input
+              className={inputClass}
               type="password"
               autoComplete="current-password"
               value={currentPassword}
@@ -66,9 +75,10 @@ export function AccountActions() {
               required
             />
           </label>
-          <label>
+          <label className={fieldClass}>
             New password
             <input
+              className={inputClass}
               type="password"
               autoComplete="new-password"
               minLength={MIN_PASSWORD_LENGTH}
@@ -78,15 +88,24 @@ export function AccountActions() {
               required
             />
           </label>
-          <button type="submit" disabled={isSubmitting}>
+          <button type="submit" disabled={isSubmitting} className={`${primaryButtonClass} mt-1`}>
             Update password
           </button>
         </form>
       </section>
-      <button type="button" disabled={isSubmitting} onClick={signOut}>
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={signOut}
+        className={`${textButtonClass} mt-7`}
+      >
         Sign out
       </button>
-      {statusMessage && <p role="status">{statusMessage}</p>}
+      {statusMessage && (
+        <p role="status" className="mt-5 rounded-lg bg-[#e8e6fa] px-4 py-3 text-[13px] leading-5">
+          {statusMessage}
+        </p>
+      )}
     </div>
   );
 }

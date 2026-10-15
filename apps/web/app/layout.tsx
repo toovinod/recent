@@ -13,7 +13,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Recent",
-  description: "Keep current on AI.",
+  description:
+    "Recent groups technology updates into stories with links to original posts and attributed reactions.",
 };
 
 export default function RootLayout({
@@ -22,8 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+    <html lang="en" className="bg-[#f2f0eb]">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#f2f0eb] font-sans text-ink antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

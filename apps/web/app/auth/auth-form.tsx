@@ -2,15 +2,22 @@
 
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from "@recent/auth/password-policy";
 import { type FormEvent, useState } from "react";
+import {
+  fieldClass,
+  inputClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  textButtonClass,
+} from "../../components/form-styles";
+import { GoogleIcon, XIcon } from "../../components/social-icons";
 import { authClient } from "../../lib/auth-client";
 
-type Mode = "sign-in" | "sign-up" | "verify" | "forgot" | "reset";
+type Mode = "sign-in" | "forgot" | "reset";
 
 export function AuthForm() {
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -25,18 +32,6 @@ export function AuthForm() {
         const { error } = await authClient.signIn.email({ email, password });
         if (error) throw new Error(error.message);
         window.location.assign("/news");
-      } else if (mode === "sign-up") {
-        const { error } = await authClient.signUp.email({ email, password, name });
-        if (error) throw new Error(error.message);
-        setPassword("");
-        setMode("verify");
-        setMessage("Check your email for a verification code.");
-      } else if (mode === "verify") {
-        const { error } = await authClient.emailOtp.verifyEmail({ email, otp });
-        if (error) throw new Error(error.message);
-        setOtp("");
-        setMode("sign-in");
-        setMessage("Email verified. You can now sign in.");
       } else if (mode === "forgot") {
         const { error } = await authClient.emailOtp.requestPasswordReset({ email });
         if (error) throw new Error(error.message);
@@ -59,24 +54,6 @@ export function AuthForm() {
     }
   }
 
-  async function resendVerificationCode() {
-    setPending(true);
-    setMessage("");
-    try {
-      const { error } = await authClient.emailOtp.sendVerificationOtp({
-        email,
-        type: "email-verification",
-      });
-      setMessage(
-        error ? (error.message ?? "Could not send a new code.") : "A new code has been sent.",
-      );
-    } catch {
-      setMessage("Could not send a new code. Please try again.");
-    } finally {
-      setPending(false);
-    }
-  }
-
   async function signInWithProvider(provider: "google" | "twitter") {
     setPending(true);
     setMessage("");
@@ -92,25 +69,20 @@ export function AuthForm() {
 
   const formTitle = {
     "sign-in": "Sign in",
-    "sign-up": "Create an account",
-    verify: "Verify your email",
     forgot: "Reset your password",
     reset: "Enter your reset code",
   }[mode];
 
   return (
-    <section className="auth-card">
-      <h2>{formTitle}</h2>
-      <form onSubmit={submitAuthForm}>
-        {mode === "sign-up" && (
-          <label>
-            Name
-            <input value={name} onChange={(event) => setName(event.target.value)} required />
-          </label>
-        )}
-        <label>
+    <section className="w-full rounded-[4px] border border-ink/10 bg-white p-6 shadow-[0_24px_70px_rgba(32,30,48,0.08)] sm:aspect-square sm:flex sm:flex-col sm:justify-center sm:p-7">
+      <h2 className="text-center text-[27px] leading-tight font-semibold tracking-[-.05em]">
+        {formTitle}
+      </h2>
+      <form onSubmit={submitAuthForm} className="mt-6 grid gap-4">
+        <label className={fieldClass}>
           Email
           <input
+            className={inputClass}
             type="email"
             autoComplete="email"
             value={email}
@@ -118,10 +90,11 @@ export function AuthForm() {
             required
           />
         </label>
-        {(mode === "sign-in" || mode === "sign-up" || mode === "reset") && (
-          <label>
+        {(mode === "sign-in" || mode === "reset") && (
+          <label className={fieldClass}>
             Password
             <input
+              className={inputClass}
               type="password"
               autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
               minLength={mode === "sign-in" ? undefined : MIN_PASSWORD_LENGTH}
@@ -132,10 +105,11 @@ export function AuthForm() {
             />
           </label>
         )}
-        {(mode === "verify" || mode === "reset") && (
-          <label>
+        {mode === "reset" && (
+          <label className={fieldClass}>
             Code
             <input
+              className={inputClass}
               inputMode="numeric"
               autoComplete="one-time-code"
               pattern="[0-9]{8}"
@@ -145,43 +119,59 @@ export function AuthForm() {
             />
           </label>
         )}
-        <button type="submit" disabled={pending}>
+        <button type="submit" disabled={pending} className={`${primaryButtonClass} mt-1`}>
           {pending ? "Please wait..." : formTitle}
         </button>
       </form>
       {mode === "sign-in" && (
-        <div className="auth-social">
-          <button type="button" disabled={pending} onClick={() => signInWithProvider("google")}>
+        <div className="mt-5 grid gap-3 border-t border-ink/10 pt-5">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => signInWithProvider("google")}
+            className={`${secondaryButtonClass} relative`}
+          >
+            <span className="absolute left-4">
+              <GoogleIcon />
+            </span>
             Continue with Google
           </button>
-          <button type="button" disabled={pending} onClick={() => signInWithProvider("twitter")}>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => signInWithProvider("twitter")}
+            className={`${secondaryButtonClass} relative`}
+          >
+            <span className="absolute left-4">
+              <XIcon />
+            </span>
             Continue with X
           </button>
         </div>
       )}
-      {mode === "verify" && (
-        <button type="button" disabled={pending} onClick={resendVerificationCode}>
-          Send another code
-        </button>
-      )}
-      <nav className="auth-links" aria-label="Account options">
+      <nav
+        className="mt-5 flex flex-wrap items-center justify-center gap-4 border-t border-ink/10 pt-5"
+        aria-label="Account options"
+      >
         {mode !== "sign-in" && (
-          <button type="button" onClick={() => setMode("sign-in")}>
+          <button type="button" onClick={() => setMode("sign-in")} className={textButtonClass}>
             Sign in
           </button>
         )}
-        {mode !== "sign-up" && (
-          <button type="button" onClick={() => setMode("sign-up")}>
-            Create account
-          </button>
-        )}
         {mode === "sign-in" && (
-          <button type="button" onClick={() => setMode("forgot")}>
+          <button type="button" onClick={() => setMode("forgot")} className={textButtonClass}>
             Forgot password?
           </button>
         )}
       </nav>
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p
+          role="status"
+          className="mt-5 rounded-lg bg-[#f1efff] px-4 py-3 text-[13px] leading-5 text-ink"
+        >
+          {message}
+        </p>
+      )}
     </section>
   );
 }
