@@ -1,0 +1,19 @@
+{
+  "name": "@recent/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@recent/typescript-config": "*",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,67 @@
+# Recent agent guidelines
+
+Recent is an AI news feed. It collects source material, groups related updates into story threads, and presents news and attributed reactions as short posts. Readers do not create posts, comments, or reposts.
+
+## How to work
+
+- Read the files relevant to the task before editing. Keep changes scoped and preserve unrelated work.
+- Prefer clear ownership over duplicated logic. Share code when two real consumers need the same contract or behavior; do not create a package for a single use.
+- Keep comments brief and useful. Use single line comments only when the code needs explanation; do not narrate the change history.
+- Do not use em dashes or emojis in code, comments, or project documentation.
+- Never commit secrets. Add example environment variables when a new required variable is introduced.
+- Match verification to risk. Add tests for behavior or contracts that could regress; skip tests that merely restate a label, style value, or implementation detail.
+- Report what you ran and what remains unverified. Do not describe a cached result as a fresh execution.
+
+## Repository map
+
+```text
+apps/web/                 Next.js App Router web app
+apps/core/                Hono API running on Bun
+packages/ui/              Shared React UI components
+packages/typescript-config/ Shared TypeScript configurations
+packages/auth/            Shared Better Auth server and client entry points
+packages/db/              Kysely database types and migrations
+packages/email/           Resend transactional email delivery
+packages/contracts/       Shared feed and story response schemas
+apps/worker/              Bun ingestion and publication worker
+```
+
+The repository currently contains these workspaces. A mobile app is planned. Check the tree before referring to a planned feature as existing code.
+
+## Boundaries
+
+- `apps/web` owns pages, layouts, server rendering, and browser interactions. Keep product API logic in `apps/core`; use Next.js route handlers only for web-specific concerns when needed.
+- `apps/core` owns HTTP endpoints and request validation. It runs TypeScript directly with Bun. Do not add a `dist` build unless a deployment requirement calls for one.
+- `packages/auth` owns shared Better Auth configuration and client entry points. Keep server and browser exports separate so database and email code cannot enter browser bundles. Core mounts the auth HTTP handler.
+- `packages/*` holds code shared by actual consumers. Apps may import packages; packages must not import apps.
+- Keep browser code free of database credentials, queue clients, and other server-only dependencies.
+- When adding a worker, run it as a separate Bun process. API handlers may enqueue work, but must not perform scheduled scraping or long-running queue processing inside an HTTP request.
+- Keep source collection, normalization, classification, story grouping, and post generation as distinct steps. Store source URLs and attribution; do not invent quotes, reactions, or claims. Make ingestion idempotent so retries do not duplicate posts.
+
+## Stack and commands
+
+- Use Bun for package installation, scripts, and the API runtime. The workspace lockfile is `bun.lock`.
+- Use Biome from the repository root. Its root configuration covers supported files throughout `apps/*` and `packages/*`.
+- `bun install`: install workspaces.
+- `bun run dev`: start development tasks through Turbo.
+- `bun run lint`: check formatting, lint rules, and imports across the repository.
+- `bun run lint:fix`: apply safe Biome fixes.
+- `bun run check-types`: typecheck workspaces through Turbo.
+- `bun run check`: run lint and typechecks.
+- `bun run build`: build workspaces that have a build step. The Hono API does not need one.
+- In `apps/core`, `bun run dev` uses hot reload; `bun run start` runs the source in production mode.
+
+Husky runs Biome on staged files before commit and the full `bun run check` before push. Run the relevant checks yourself before handing off work; hooks do not replace verification.
+
+## Planned integrations
+
+The implemented stack includes PostgreSQL, Kysely, Zod, Better Auth, Redis, BullMQ, and a Bun worker. Neon hosting and React Native remain planned. Keep shared schemas in packages used by both producers and consumers.
+
+When implementing ingestion, respect each source's access terms and rate limits. Preserve the original link and publication time, distinguish reporting from opinion, and keep model generated summaries traceable to source material. The current 15 minute feed dispatch and two hour X poll do not guarantee coverage or freshness.
+
+## Verification
+
+- For changes in `apps/core`, run `bun run check` and verify affected endpoints or behavior.
+- For changes in `apps/web` or `packages/ui`, run `bun run check` and `bun run build`. Inspect changed UI in a browser when layout or interaction is uncertain.
+- For shared contracts or cross workspace changes, check each affected consumer and run the root checks.
+- Do not hand edit generated output such as `.next/`, `.turbo/`, or `dist/`.

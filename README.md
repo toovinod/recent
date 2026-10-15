@@ -1,159 +1,27 @@
-# Turborepo starter
+# Recent
 
-This Turborepo starter is maintained by the Turborepo core team.
+Keeps you current on AI.
 
-## Using this example
+## Local auth setup
 
-Run the following command:
+Recent uses Bun workspaces, a Bun/Hono core API, a server-rendered Next.js web app, Kysely with PostgreSQL, Better Auth, and Resend.
 
-```sh
-npx create-turbo@latest
-```
+1. Run `bun install` at the repository root.
+2. Copy `packages/db/.env.example` to `packages/db/.env`, `apps/core/.env.example` to `apps/core/.env`, and `apps/web/.env.example` to `apps/web/.env`.
+3. Put the same local PostgreSQL URL in the database and core environment files. Set a random `BETTER_AUTH_SECRET` with at least 32 characters, a Resend API key, and a verified sender address in the core file.
+4. Run `bun run --cwd packages/db migrate` to apply the auth and feed migrations.
+5. Run `bun run dev`, then open `http://localhost:3000/auth`.
 
-## What's inside?
+Google and X sign-in become available when both client credentials for the provider are set in `apps/core/.env`. Register `http://localhost:4000/api/auth/callback/google` and `http://localhost:4000/api/auth/callback/twitter` with the providers. X sign-in requires the `user.email` scope. These OAuth credentials are separate from the X API credentials used for news collection.
 
-This Turborepo includes the following packages/apps:
+Email passwords must be 6 to 20 characters. Account settings support changing the password.
 
-### Apps and Packages
+The web and API use `localhost` on different ports in development. In production, configure `BETTER_AUTH_URL`, `WEB_ORIGIN`, and `NEXT_PUBLIC_CORE_URL` with the public origins. If they are different subdomains, set `AUTH_COOKIE_DOMAIN` to their common parent domain so the Next.js server can read the session cookie. `CORE_INTERNAL_URL` may point to an internal core address for server-side session requests.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## News pipeline
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+The news feed is at `/news`; story threads are at `/stories/[storyId]`. The Bun worker collects configured Atom and RSS feeds every 15 minutes when due, classifies items with Jev, matches stories, and selects source-backed text with Luna when an excerpt is long. PostgreSQL owns the published cards. BullMQ uses `QUEUE_REDIS_URL`; the feed cache uses `CACHE_REDIS_URL`. Use separate Redis instances in production.
 
-### Utilities
+For local Docker, `postgres://recent:recent@localhost:5432/recent` and `redis://localhost:6379` match the development containers. The queue and cache URLs may point to that same Redis instance locally.
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-bun exec turbo build
-bun exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Copy `apps/worker/.env.example` to `apps/worker/.env`, set the database URL and provider keys, and add a reviewed feed with `bun run --cwd apps/worker source:add "Source name" atom "https://example.com/feed.atom"`. For X, provide a separate API bearer token and register a numeric user ID with `bun run --cwd apps/worker source:add "Account name" x "https://x.com/i/user/123456"`. X sources poll every two hours and reserve at most five reads per request against a conservative 2,000 read monthly cap. Configure a $10 spending limit in the X Developer Console as the authoritative charge guard. The five post page can miss bursts, so track source coverage before expanding it. Run `bun run --cwd apps/worker dev` alongside core and web. The worker starts the recurring dispatcher and relays database outbox events to its queues. No source is enabled by default, so source selection remains deliberate.

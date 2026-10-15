@@ -1,0 +1,10 @@
+{
+  "extends": "@recent/typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true
+  },
+  "include": ["src"]
+}

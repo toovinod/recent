@@ -1,0 +1,26 @@
+{
+  "name": "@recent/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/main.ts",
+    "start": "NODE_ENV=production bun run src/main.ts",
+    "source:add": "bun run src/add-source.ts",
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@recent/db": "*",
+    "bullmq": "6.3.11",
+    "fast-xml-parser": "5.11.2",
+    "ioredis": "6.0.0",
+    "kysely": "0.29.6",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@recent/typescript-config": "*",
+    "@types/bun": "1.4.2",
+    "typescript": "7.0.2"
+  }
+}
