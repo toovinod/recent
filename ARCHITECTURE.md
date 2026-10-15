@@ -17,9 +17,9 @@ Open-source code does not grant rights to republish third-party text or media. S
 | `apps/web`           | Next.js App Router pages, server rendering, feed and thread UI, auth UI                                  | Exists                                |
 | `apps/core`          | Bun/Hono HTTP API, Better Auth handler, validation, feed reads, administrative commands, queue producers | Exists as a minimal API               |
 | `apps/worker`        | Separate Bun process running BullMQ consumers and scheduler registration                                 | Planned                               |
-| `packages/db`        | Kysely types, migrations, database access and transaction helpers                                       | Auth foundation exists                |
-| `packages/auth`      | Shared Better Auth server factory and browser client entry points                                       | Auth foundation exists                |
-| `packages/email`     | Resend transactional email delivery                                                                     | Auth foundation exists                |
+| `packages/db`        | Kysely types, migrations, database access and transaction helpers                                        | Auth foundation exists                |
+| `packages/auth`      | Shared Better Auth server factory and browser client entry points                                        | Auth foundation exists                |
+| `packages/email`     | Resend transactional email delivery                                                                      | Auth foundation exists                |
 | `packages/queue`     | BullMQ queue names, payload schemas, producer helpers, connection policy                                 | Planned; shared by core and worker    |
 | `packages/contracts` | Public feed and story response contracts shared by core and web                                          | Planned when both consumers use them  |
 | `packages/ui`        | Shared React components                                                                                  | Exists                                |
