@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const argumentsSchema = z.object({
   name: z.string().min(1).max(120),
-  kind: z.enum(["atom", "rss", "x"]),
+  kind: z.enum(["atom", "rss", "x", "x_search"]),
   feedUrl: z
     .url()
     .refine((value) => new URL(value).protocol === "https:", "Source URL must use HTTPS"),
@@ -14,6 +14,16 @@ const [name, kind, feedUrl] = process.argv.slice(2);
 const source = argumentsSchema.parse({ name, kind, feedUrl });
 if (source.kind === "x" && !/^https:\/\/x\.com\/i\/user\/\d+$/.test(source.feedUrl)) {
   throw new Error("X source URL must be https://x.com/i/user/<numeric-user-id>");
+}
+if (
+  source.kind === "x_search" &&
+  (new URL(source.feedUrl).origin !== "https://api.x.com" ||
+    new URL(source.feedUrl).pathname !== "/2/tweets/search/recent" ||
+    !new URL(source.feedUrl).searchParams.get("query"))
+) {
+  throw new Error(
+    "X search sources require https://api.x.com/2/tweets/search/recent?query=<reviewed-query>",
+  );
 }
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
@@ -29,7 +39,7 @@ try {
       kind: source.kind,
       feedUrl: source.feedUrl,
       enabled: true,
-      pollIntervalSeconds: source.kind === "x" ? 7200 : 900,
+      pollIntervalSeconds: source.kind.startsWith("x") ? 7200 : 900,
       nextPollAt: now,
       createdAt: now,
       updatedAt: now,

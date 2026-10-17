@@ -1,10 +1,10 @@
 "use client";
 
-import { type FeedCard, type FeedPage, feedPageSchema } from "@recent/contracts";
+import { type FeedCard, type FeedPage, feedPageSchema, storyPageSchema } from "@recent/contracts";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { NewsCard } from "../../components/news-card";
+import { VirtualCards } from "../../components/virtual-cards";
 
-export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
+export function NewsFeed({ initialPage, storyId }: { initialPage: FeedPage; storyId?: string }) {
   const [cards, setCards] = useState(initialPage.cards);
   const [nextCursor, setNextCursor] = useState(initialPage.nextCursor);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +19,10 @@ export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
     setError("");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_CORE_URL ?? "http://localhost:4000"}/api/feed?cursor=${encodeURIComponent(nextCursor)}`,
+        `${process.env.NEXT_PUBLIC_CORE_URL ?? "http://localhost:4000"}${storyId ? `/api/stories/${storyId}` : "/api/feed"}?cursor=${encodeURIComponent(nextCursor)}`,
         {
           credentials: "include",
+          signal: AbortSignal.timeout(15_000),
         },
       );
       if (response.status === 401) {
@@ -29,7 +30,7 @@ export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
         return;
       }
       if (!response.ok) throw new Error("Unable to load more news");
-      const page = feedPageSchema.parse(await response.json());
+      const page = (storyId ? storyPageSchema : feedPageSchema).parse(await response.json());
       setCards((current: FeedCard[]) => {
         const seen = new Set(current.map((card) => card.id));
         return [...current, ...page.cards.filter((card) => !seen.has(card.id))];
@@ -41,7 +42,7 @@ export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [nextCursor]);
+  }, [nextCursor, storyId]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -64,9 +65,7 @@ export function NewsFeed({ initialPage }: { initialPage: FeedPage }) {
         </p>
       )}
       <div className="border-b border-ink/15">
-        {cards.map((card) => (
-          <NewsCard key={card.id} card={card} />
-        ))}
+        <VirtualCards cards={cards} />
       </div>
       <div ref={sentinelRef} aria-hidden="true" />
       {isLoading && (

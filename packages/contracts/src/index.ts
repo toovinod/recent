@@ -31,6 +31,7 @@ export const feedPageSchema = z.object({
 export const storyPageSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  nextCursor: z.string().nullable(),
   cards: z.array(feedCardSchema),
 });
 

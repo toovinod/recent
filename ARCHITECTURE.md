@@ -1,6 +1,6 @@
 # Recent architecture
 
-Status: design for review. This file describes the intended system, not components that already exist. See [SCHEMAS.md](SCHEMAS.md) for the data model. Hosting and capacity choices remain open.
+Status: target architecture. Implemented behavior and operational instructions are tracked in [README.md](README.md). This document includes future capabilities and is not a completion checklist. See [SCHEMAS.md](SCHEMAS.md) for the target data model. Hosting and capacity choices remain open.
 
 ## Product contract
 
@@ -16,12 +16,12 @@ Open-source code does not grant rights to republish third-party text or media. S
 | -------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `apps/web`           | Next.js App Router pages, server rendering, feed and thread UI, auth UI                                  | Exists                                |
 | `apps/core`          | Bun/Hono HTTP API, Better Auth handler, validation, feed reads, administrative commands, queue producers | Exists as a minimal API               |
-| `apps/worker`        | Separate Bun process running BullMQ consumers and scheduler registration                                 | Planned                               |
-| `packages/db`        | Kysely types, migrations, database access and transaction helpers                                        | Auth foundation exists                |
+| `apps/worker`        | Separate Bun process running BullMQ consumers and scheduler registration                                 | Implemented                           |
+| `packages/db`        | Kysely types, migrations, database access and transaction helpers                                        | Auth, feed, pipeline and editorial migrations exist |
 | `packages/auth`      | Shared Better Auth server factory and browser client entry points                                        | Auth foundation exists                |
 | `packages/email`     | Resend transactional email delivery                                                                      | Auth foundation exists                |
 | `packages/queue`     | BullMQ queue names, payload schemas, producer helpers, connection policy                                 | Planned; shared by core and worker    |
-| `packages/contracts` | Public feed and story response contracts shared by core and web                                          | Planned when both consumers use them  |
+| `packages/contracts` | Public feed and story response contracts shared by core and web                                          | Implemented for core and web           |
 | `packages/ui`        | Shared React components                                                                                  | Exists                                |
 | `apps/mobile`        | React Native reader client using the same core API                                                       | Planned, not part of first deployment |
 

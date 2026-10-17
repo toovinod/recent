@@ -15,7 +15,7 @@ class BunMigrationProvider implements MigrationProvider {
   }
 }
 
-const db = createDatabase(process.env.DATABASE_URL ?? "");
+const db = createDatabase(process.env.DATABASE_URL ?? "", { statementTimeoutMs: 0 });
 
 try {
   const { error, results } = await new Migrator({

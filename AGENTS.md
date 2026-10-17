@@ -57,7 +57,7 @@ Husky runs Biome on staged files before commit and the full `bun run check` befo
 
 The implemented stack includes PostgreSQL, Kysely, Zod, Better Auth, Redis, BullMQ, and a Bun worker. Neon hosting and React Native remain planned. Keep shared schemas in packages used by both producers and consumers.
 
-When implementing ingestion, respect each source's access terms and rate limits. Preserve the original link and publication time, distinguish reporting from opinion, and keep model generated summaries traceable to source material. The current 15 minute feed dispatch and two hour X poll do not guarantee coverage or freshness.
+When implementing ingestion, respect each source's access terms and rate limits. Preserve the original link and publication time, distinguish reporting from opinion, and keep model generated summaries traceable to source material. The current one minute due-source dispatch and two hour X poll do not guarantee coverage or freshness.
 
 ## Verification
 

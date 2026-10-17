@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: recent
+          POSTGRES_PASSWORD: recent
+          POSTGRES_DB: recent_test
+        ports:
+          - 55432:5432
+        options: --health-cmd "pg_isready -U recent" --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.4
+        ports:
+          - 56379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://recent:recent@127.0.0.1:55432/recent_test
+      TEST_REDIS_URL: redis://127.0.0.1:56379/13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun audit
+      - run: bun run check
+      - run: bun run --cwd packages/db migrate
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      - run: bun test apps/core/src apps/worker/src
+      - run: bun run build

@@ -11,7 +11,7 @@
     "migrate": "bun run src/migrate.ts"
   },
   "dependencies": {
-    "kysely": "0.29.6",
+    "kysely": "0.29.7",
     "pg": "8.23.1"
   },
   "devDependencies": {

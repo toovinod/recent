@@ -1,6 +1,7 @@
 import type { FeedCard } from "@recent/contracts";
 import Link from "next/link";
 import { ArrowIcon } from "./landing/primitives";
+import { PublishedTime } from "./published-time";
 
 export function NewsCard({ card }: { card: FeedCard }) {
   return (
@@ -9,12 +10,7 @@ export function NewsCard({ card }: { card: FeedCard }) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-[#655bbb]">
           <span className="capitalize">{card.format}</span>
           {card.role === "update" && <span>Story update</span>}
-          <time dateTime={card.publishedAt} className="text-muted">
-            {new Date(card.publishedAt).toLocaleString("en", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}
-          </time>
+          <PublishedTime value={card.publishedAt} />
         </div>
         <h2 className="mt-4 max-w-[630px] text-[clamp(28px,3vw,42px)] leading-[1.12] font-medium tracking-[-.055em]">
           <Link

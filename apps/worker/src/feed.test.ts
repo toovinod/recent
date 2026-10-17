@@ -20,3 +20,30 @@ test("RSS rejects unsafe links", () => {
   );
   expect(items).toHaveLength(0);
 });
+
+test("feeds skip missing and Atom self links and reject entity declarations", () => {
+  expect(
+    parseFeed(
+      `<rss><channel><item><title>Missing URL</title></item></channel></rss>`,
+      "https://example.com/feed",
+    ),
+  ).toHaveLength(0);
+  expect(
+    parseFeed(
+      `<feed><entry><title>Self only</title><link rel="self" href="https://example.com/entry.atom"/></entry></feed>`,
+      "https://example.com/feed",
+    ),
+  ).toHaveLength(0);
+  expect(() =>
+    parseFeed(`<!DOCTYPE feed [<!ENTITY payload "unsafe">]><feed/>`, "https://example.com/feed"),
+  ).toThrow("declarations");
+});
+
+test("RSS content and author fallbacks preserve source attribution", () => {
+  const [item] = parseFeed(
+    `<rss><channel><item><title>Release</title><link>https://example.com/release</link><content:encoded><![CDATA[<p>Original content</p>]]></content:encoded><author>Ada</author></item></channel></rss>`,
+    "https://example.com/feed",
+  );
+  expect(item?.excerpt).toBe("Original content");
+  expect(item?.authorName).toBe("Ada");
+});

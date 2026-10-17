@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "@recent/db": "*",
-    "bullmq": "6.3.11",
+    "@typesafe-ai/sdk": "0.7.0",
+    "bullmq": "6.3.16",
     "fast-xml-parser": "5.11.2",
     "ioredis": "6.0.0",
-    "kysely": "0.29.6",
-    "zod": "4.6.5"
+    "kysely": "0.29.7",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@recent/typescript-config": "*",

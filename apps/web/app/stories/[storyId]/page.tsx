@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
-import { NewsCard } from "../../../components/news-card";
 import { getStoryPage } from "../../../lib/feed-api";
+import { NewsFeed } from "../../news/feed";
 
 export default async function StoryPage({ params }: PageProps<"/stories/[storyId]">) {
   const { storyId } = await params;
@@ -17,11 +17,7 @@ export default async function StoryPage({ params }: PageProps<"/stories/[storyId
             {result.story.title}
           </h1>
         </header>
-        <div className="border-b border-ink/15">
-          {result.story.cards.map((card) => (
-            <NewsCard key={card.id} card={card} />
-          ))}
-        </div>
+        <NewsFeed initialPage={result.story} storyId={storyId} />
       </main>
     </AppShell>
   );

@@ -12,6 +12,8 @@ const cursorSchema = z.object({
   publishedAt: z.iso.datetime({ offset: true }),
   id: z.string().uuid(),
   snapshotAt: z.iso.datetime({ offset: true }),
+  storyId: z.string().uuid().optional(),
+  role: z.enum(["main", "update"]).optional(),
 });
 
 type Cursor = z.infer<typeof cursorSchema>;
@@ -59,6 +61,7 @@ function toCard(row: CardRow): FeedCard {
 
 export async function readFeed(database: AppDatabase, cursorValue?: string): Promise<FeedPage> {
   const cursor = cursorValue ? decodeCursor(cursorValue) : null;
+  if (cursor?.storyId) throw new Error("Invalid cursor");
   const snapshotAt = cursor?.snapshotAt ?? new Date().toISOString();
   let query = database
     .selectFrom("post")
@@ -76,6 +79,7 @@ export async function readFeed(database: AppDatabase, cursorValue?: string): Pro
       "sourceItem.publishedAt as sourcePublishedAt",
     ])
     .where("post.status", "=", "published")
+    .where("sourceItem.availability", "=", "active")
     .where("post.publishedAt", "<=", new Date(snapshotAt));
   if (cursor) {
     query = query.where((expression) =>
@@ -108,7 +112,14 @@ export async function readFeed(database: AppDatabase, cursorValue?: string): Pro
   });
 }
 
-export async function readStory(database: AppDatabase, storyId: string): Promise<StoryPage | null> {
+export async function readStory(
+  database: AppDatabase,
+  storyId: string,
+  cursorValue?: string,
+): Promise<StoryPage | null> {
+  const cursor = cursorValue ? decodeCursor(cursorValue) : null;
+  if (cursor && (cursor.storyId !== storyId || !cursor.role)) throw new Error("Invalid cursor");
+  const snapshotAt = cursor?.snapshotAt ?? new Date().toISOString();
   const story = await database
     .selectFrom("story")
     .select(["id", "title"])
@@ -116,7 +127,7 @@ export async function readStory(database: AppDatabase, storyId: string): Promise
     .where("status", "=", "active")
     .executeTakeFirst();
   if (!story) return null;
-  const rows = await database
+  let query = database
     .selectFrom("post")
     .innerJoin("sourceItem", "sourceItem.id", "post.sourceItemId")
     .select([
@@ -133,13 +144,47 @@ export async function readStory(database: AppDatabase, storyId: string): Promise
     ])
     .where("post.storyId", "=", storyId)
     .where("post.status", "=", "published")
+    .where("sourceItem.availability", "=", "active")
+    .where("post.publishedAt", "<=", new Date(snapshotAt));
+  if (cursor?.role) {
+    const role = cursor.role;
+    query = query.where((eb) =>
+      eb.or([
+        eb("post.role", ">", role),
+        eb.and([
+          eb("post.role", "=", role),
+          eb.or([
+            eb("post.publishedAt", ">", new Date(cursor.publishedAt)),
+            eb.and([
+              eb("post.publishedAt", "=", new Date(cursor.publishedAt)),
+              eb("post.id", ">", cursor.id),
+            ]),
+          ]),
+        ]),
+      ]),
+    );
+  }
+  const rows = await query
+    .orderBy("post.role", "asc")
     .orderBy("post.publishedAt", "asc")
     .orderBy("post.id", "asc")
-    .limit(100)
+    .limit(21)
     .execute();
+  const visible = rows.slice(0, 20);
+  const last = visible.at(-1);
   return storyPageSchema.parse({
     id: story.id,
     title: story.title,
-    cards: rows.map(toCard),
+    cards: visible.map(toCard),
+    nextCursor:
+      rows.length > 20 && last
+        ? encodeCursor({
+            storyId,
+            role: last.role,
+            id: last.id,
+            publishedAt: last.publishedAt.toISOString(),
+            snapshotAt,
+          })
+        : null,
   });
 }

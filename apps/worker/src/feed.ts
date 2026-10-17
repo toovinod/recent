@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
+import { assertProviderResponse, ProviderError } from "./provider";
 
 export interface FeedItem {
   externalId: string | null;
@@ -44,6 +45,7 @@ function plainText(value: unknown): string {
 
 function canonicalUrl(value: string, feedUrl: string): string | null {
   try {
+    if (!value.trim()) return null;
     const url = new URL(value, feedUrl);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
     url.hash = "";
@@ -72,22 +74,28 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 export function parseFeed(xml: string, feedUrl: string): FeedItem[] {
+  if (/<!\s*(?:DOCTYPE|ENTITY)\b/i.test(xml))
+    throw new ProviderError("Feed document declarations are unsupported", false);
   const document = object(parser.parse(xml));
   const rss = object(object(document.rss).channel);
   const atom = object(document.feed);
   const entries = array(rss.item ?? atom.entry).slice(0, 100);
-  if (!document.rss && !document.feed) throw new Error("Unsupported feed format");
+  if (!document.rss && !document.feed) throw new ProviderError("Unsupported feed format", false);
 
   return entries.flatMap((raw): FeedItem[] => {
     const entry = object(raw);
     const links = array(entry.link).map(object);
-    const atomLink = links.find((link) => link["@_rel"] === "alternate") ?? links[0];
+    const atomLink =
+      links.find((link) => link["@_rel"] === "alternate") ??
+      links.find((link) => link["@_href"] && !link["@_rel"]);
     const originalUrl = text(atomLink?.["@_href"] ?? entry.link);
     const normalizedUrl = canonicalUrl(originalUrl, feedUrl);
     const title = plainText(entry.title).slice(0, 300);
     if (!normalizedUrl || !title) return [];
 
-    const excerpt = plainText(entry.summary ?? entry.description ?? entry.content).slice(0, 4000);
+    const excerpt = plainText(
+      entry.summary ?? entry.description ?? entry.content ?? entry["content:encoded"],
+    ).slice(0, 4000);
     const author = object(entry.author);
     return [
       {
@@ -95,7 +103,7 @@ export function parseFeed(xml: string, feedUrl: string): FeedItem[] {
         originalUrl: new URL(originalUrl, feedUrl).toString(),
         canonicalUrl: normalizedUrl,
         title,
-        authorName: plainText(author.name ?? entry["dc:creator"]) || null,
+        authorName: plainText(author.name ?? entry["dc:creator"] ?? entry.author) || null,
         excerpt,
         publishedAt: date(entry.pubDate ?? entry.published ?? entry.updated),
         contentHash: createHash("sha256").update(`${title}\0${excerpt}`).digest("hex"),
@@ -131,7 +139,7 @@ export async function fetchFeed(
       unchanged: true,
     };
   }
-  if (!response.ok) throw new Error(`Feed request failed with status ${response.status}`);
+  assertProviderResponse(response, "Feed");
   const reader = response.body?.getReader();
   if (!reader) throw new Error("Feed response has no body");
   const chunks: Uint8Array[] = [];

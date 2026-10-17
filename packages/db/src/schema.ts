@@ -1,3 +1,5 @@
+import type { Generated, Selectable } from "kysely";
+
 export interface UserTable {
   id: string;
   name: string;
@@ -54,7 +56,8 @@ export interface RateLimitTable {
 export interface SourceTable {
   id: string;
   name: string;
-  kind: "atom" | "rss" | "x";
+  kind: "atom" | "rss" | "x" | "x_search";
+  expiresAt: Generated<Date | null>;
   feedUrl: string;
   enabled: boolean;
   pollIntervalSeconds: number;
@@ -69,9 +72,11 @@ export interface SourceCursorTable {
   lastModified: string | null;
   lastSuccessAt: Date | null;
   sinceId: string | null;
+  paginationToken: Generated<string | null>;
+  crawlNewestId: Generated<string | null>;
 }
 
-export interface SourceItemTable {
+interface SourceItemRecord {
   id: string;
   sourceId: string;
   externalId: string | null;
@@ -86,6 +91,8 @@ export interface SourceItemTable {
   conversationId: string | null;
   referencedPostId: string | null;
   referenceType: "replied_to" | "quoted" | null;
+  availability: Generated<"active" | "unavailable">;
+  xCheckedAt: Generated<Date | null>;
 }
 
 export interface XReadBudgetTable {
@@ -100,6 +107,7 @@ export interface PipelineTaskTable {
   id: string;
   sourceItemId: string;
   stage: PipelineStage;
+  nextAttemptAt: Generated<Date>;
   stageVersion: number;
   inputHash: string;
   status: TaskStatus;
@@ -115,6 +123,7 @@ export interface OutboxEventTable {
   aggregateId: string;
   createdAt: Date;
   deliveredAt: Date | null;
+  claimExpiresAt: Date | null;
 }
 
 export type ContentType =
@@ -185,11 +194,60 @@ export interface ReviewItemTable {
   id: string;
   sourceItemId: string;
   reason: string;
-  status: "open" | "resolved";
+  status: "open" | "resolved" | "approved" | "rejected";
+  resolvedBy: Generated<string | null>;
+  resolutionReason: Generated<string | null>;
+  resolvedAt: Generated<Date | null>;
+  createdAt: Date;
+}
+
+export interface PostRevisionTable {
+  id: string;
+  postId: string;
+  action: "publish" | "correct" | "retract";
+  headline: string;
+  body: string;
+  attribution: string;
+  status: "published" | "retracted";
+  actorId: string;
+  reason: string;
+  createdAt: Date;
+}
+
+export interface EditorialActionTable {
+  id: string;
+  action: string;
+  aggregateId: string;
+  actorId: string;
+  reason: string;
+  createdAt: Date;
+}
+
+export interface ModelBudgetTable {
+  month: string;
+  reservedUsd: number;
+  requests: number;
+}
+
+export interface ModelUsageTable {
+  id: string;
+  sourceItemId: string;
+  provider: string;
+  purpose: string;
+  reservedUsd: number;
+  inputTokens: Generated<number | null>;
+  outputTokens: Generated<number | null>;
+  requestId: Generated<string | null>;
+  status: "reserved" | "completed" | "failed";
+  durationMs: Generated<number | null>;
   createdAt: Date;
 }
 
 export interface Database {
+  postRevision: PostRevisionTable;
+  editorialAction: EditorialActionTable;
+  modelBudget: ModelBudgetTable;
+  modelUsage: ModelUsageTable;
   user: UserTable;
   session: SessionTable;
   account: AccountTable;
@@ -197,7 +255,7 @@ export interface Database {
   rateLimit: RateLimitTable;
   source: SourceTable;
   sourceCursor: SourceCursorTable;
-  sourceItem: SourceItemTable;
+  sourceItem: SourceItemRecord;
   xReadBudget: XReadBudgetTable;
   pipelineTask: PipelineTaskTable;
   outboxEvent: OutboxEventTable;
@@ -209,3 +267,5 @@ export interface Database {
   cacheGeneration: CacheGenerationTable;
   reviewItem: ReviewItemTable;
 }
+
+export type SourceItemTable = Selectable<SourceItemRecord>;
