@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="450" viewBox="0 0 1200 450" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Recent</title>
+  <desc id="desc">A white recent wordmark inside a black square, centered on a dark grid.</desc>
+  <defs>
+    <pattern id="grid" width="75" height="75" patternUnits="userSpaceOnUse">
+      <path d="M75 0H0V75" stroke="#737373" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <path fill="#0d1117" d="M0 0h1200v450H0z"/>
+  <path fill="url(#grid)" d="M.5.5h1199v449H.5z"/>
+  <path stroke="#737373" d="M.5.5h1199v449H.5z"/>
+  <path fill="#000" stroke="#737373" d="M450 75h300v300H450z"/>
+  <text x="600" y="229" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="600" letter-spacing="-4" text-anchor="middle" dominant-baseline="middle">recent</text>
+</svg>

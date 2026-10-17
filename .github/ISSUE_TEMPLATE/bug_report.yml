@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible problem.
+body:
+  - type: markdown
+    attributes:
+      value: For vulnerabilities, use the [security policy](https://github.com/toovinod/recent/blob/main/SECURITY.md). Do not include credentials or personal data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal example when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Commit, Bun version, operating system, browser, and affected service.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Remove tokens, cookies, connection strings, and personal data.

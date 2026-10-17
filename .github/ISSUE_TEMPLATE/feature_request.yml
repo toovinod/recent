@@ -1,0 +1,17 @@
+name: Feature request
+description: Propose a change to Recent.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who encounters this problem, and what are they trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the result you want and any alternatives you considered.
+    validations:
+      required: true

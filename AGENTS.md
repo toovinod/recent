@@ -53,9 +53,11 @@ The repository currently contains these workspaces. A mobile app is planned. Che
 
 Husky runs Biome on staged files before commit and the full `bun run check` before push. Run the relevant checks yourself before handing off work; hooks do not replace verification.
 
-## Planned integrations
+## Current implementation and documentation
 
-The implemented stack includes PostgreSQL, Kysely, Zod, Better Auth, Redis, BullMQ, and a Bun worker. Neon hosting and React Native remain planned. Keep shared schemas in packages used by both producers and consumers.
+The implemented stack includes PostgreSQL, Kysely, Zod, Better Auth, Redis, BullMQ, and a separate Bun worker. TypeSafe classification and matching use `@typesafe-ai/sdk`. Editorial recovery is implemented through core admin endpoints. A mobile client and general HTML crawling are not implemented. Keep shared response schemas in `packages/contracts`.
+
+Use `ARCHITECTURE.md` for current ownership, `docs/development.md` for setup, `docs/deployment.md` for hosting and migrations, and `docs/operations.md` for recovery and editorial actions. The migrations and `packages/db/src/schema.ts` define the implemented database. `SCHEMAS.md` is an ignored local design note, not a published schema contract. Update relevant documentation when behavior or configuration changes.
 
 When implementing ingestion, respect each source's access terms and rate limits. Preserve the original link and publication time, distinguish reporting from opinion, and keep model generated summaries traceable to source material. The current one minute due-source dispatch and two hour X poll do not guarantee coverage or freshness.
 
@@ -64,4 +66,7 @@ When implementing ingestion, respect each source's access terms and rate limits.
 - For changes in `apps/core`, run `bun run check` and verify affected endpoints or behavior.
 - For changes in `apps/web` or `packages/ui`, run `bun run check` and `bun run build`. Inspect changed UI in a browser when layout or interaction is uncertain.
 - For shared contracts or cross workspace changes, check each affected consumer and run the root checks.
+- Run `bun test apps/core/src apps/worker/src` for regression coverage. Integration suites require disposable local PostgreSQL and Redis; they truncate their test data. Never point them at an application database.
+- For documentation and workflow changes, validate relative links, commands, YAML, and any changed visual assets.
+- Follow `CONTRIBUTING.md` and `SECURITY.md`. Do not publish vulnerability details or include secrets in issue fixtures.
 - Do not hand edit generated output such as `.next/`, `.turbo/`, or `dist/`.
