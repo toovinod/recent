@@ -44,5 +44,5 @@ jobs:
       - run: bun run --cwd packages/db migrate
         env:
           DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
-      - run: bun test apps/core/src apps/worker/src
+      - run: bun run test
       - run: bun run build

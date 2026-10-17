@@ -38,7 +38,7 @@ Set `MODEL_MONTHLY_BUDGET_USD`, `MODEL_MONTHLY_REQUEST_LIMIT`, `JEV_REQUEST_BUDG
 
 ## Verification and performance
 
-Run `bun test apps/core/src apps/worker/src` for unit tests. Integration suites run when `TEST_DATABASE_URL` points to a disposable local database named `recent_test`; Redis tests additionally require `TEST_REDIS_URL=redis://127.0.0.1:56379/13`. These suites truncate their test tables and create/delete isolated test queues. Never point them at application data. Apply migrations to that test database first.
+Run `bun run test` for unit tests. Integration suites run when `TEST_DATABASE_URL` points to a disposable local database named `recent_test`; Redis tests additionally require `TEST_REDIS_URL=redis://127.0.0.1:56379/13`. These suites truncate their test tables and create/delete isolated test queues. Never point them at application data. Apply migrations to that test database first.
 
 `TEST_DATABASE_URL=postgres://.../recent_test bun run apps/worker/src/benchmark-stories.ts` compares the old candidate query with the indexed trigram predicate on 50,000 synthetic stories and rolls its fixture back. This is a reproducible local benchmark, not a production latency guarantee. Matching evaluates up to five candidates in one bounded provider request and holds ambiguous multi-match results for review.
 

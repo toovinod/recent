@@ -6,10 +6,12 @@
     "dev": "turbo run dev",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "lint:staged": "bun --bun lint-staged",
     "format": "biome format --write .",
     "check-types": "turbo run check-types",
     "check": "bun run lint && bun run check-types",
-    "prepare": "bunx --bun husky"
+    "test": "bun test apps/core/src apps/worker/src",
+    "prepare": "bun --bun husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

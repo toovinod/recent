@@ -12,7 +12,7 @@ Use Bun and the committed `bun.lock`. Run Biome from the repository root. Keep s
 
 ```sh
 bun run check
-bun test apps/core/src apps/worker/src
+bun run test
 bun run build
 ```
 

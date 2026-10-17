@@ -78,7 +78,7 @@ See [operations](operations.md) for search sources, read allowances, review, and
 
 ```sh
 bun run check
-bun test apps/core/src apps/worker/src
+bun run test
 bun run build
 ```
 
@@ -86,7 +86,7 @@ Without test service URLs, database and Redis integration suites are skipped. CI
 
 ```sh
 DATABASE_URL=postgres://recent:recent@127.0.0.1:55432/recent_test bun run --cwd packages/db migrate
-TEST_DATABASE_URL=postgres://recent:recent@127.0.0.1:55432/recent_test TEST_REDIS_URL=redis://127.0.0.1:56379/13 bun test apps/core/src apps/worker/src
+TEST_DATABASE_URL=postgres://recent:recent@127.0.0.1:55432/recent_test TEST_REDIS_URL=redis://127.0.0.1:56379/13 bun run test
 ```
 
 Integration tests truncate tables and remove test queues. Use only disposable services. The `TEST_DATABASE_URL` and `TEST_REDIS_URL` variables are independent of the application database.

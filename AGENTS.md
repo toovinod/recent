@@ -51,7 +51,7 @@ The repository currently contains these workspaces. A mobile app is planned. Che
 - `bun run build`: build workspaces that have a build step. The Hono API does not need one.
 - In `apps/core`, `bun run dev` uses hot reload; `bun run start` runs the source in production mode.
 
-Husky runs Biome on staged files before commit and the full `bun run check` before push. Run the relevant checks yourself before handing off work; hooks do not replace verification.
+Husky runs `bun run lint:staged` before commit and `bun run check` followed by `bun run test` before push. Database and Redis integration suites require disposable test service URLs; otherwise they are skipped. Run the relevant checks yourself before handing off work; hooks do not replace verification.
 
 ## Current implementation and documentation
 
@@ -66,7 +66,7 @@ When implementing ingestion, respect each source's access terms and rate limits.
 - For changes in `apps/core`, run `bun run check` and verify affected endpoints or behavior.
 - For changes in `apps/web` or `packages/ui`, run `bun run check` and `bun run build`. Inspect changed UI in a browser when layout or interaction is uncertain.
 - For shared contracts or cross workspace changes, check each affected consumer and run the root checks.
-- Run `bun test apps/core/src apps/worker/src` for regression coverage. Integration suites require disposable local PostgreSQL and Redis; they truncate their test data. Never point them at an application database.
+- Run `bun run test` for regression coverage. Integration suites require disposable local PostgreSQL and Redis; they truncate their test data. Never point them at an application database.
 - For documentation and workflow changes, validate relative links, commands, YAML, and any changed visual assets.
 - Follow `CONTRIBUTING.md` and `SECURITY.md`. Do not publish vulnerability details or include secrets in issue fixtures.
 - Do not hand edit generated output such as `.next/`, `.turbo/`, or `dist/`.
